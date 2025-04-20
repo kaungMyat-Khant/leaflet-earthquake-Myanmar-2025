@@ -1,0 +1,49 @@
+---
+title: 'Earthquake Myanmar 2025: Casualties'
+author: "Kaung Myat Khant"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE,
+                      message = FALSE,
+                      warning = FALSE,
+                      comment = FALSE,
+                      prompt = FALSE)
+```
+
+```{r laod, include=FALSE}
+library(dplyr)
+rm(list = ls())
+df <- read.csv("2025_myanmar_earthquake_data.csv")
+summary(df)
+df <- df %>% 
+    mutate(
+        colorLabel = case_when(Fatalities < 100 ~ "Less than 100",
+                           Fatalities >= 100 & Fatalities <= 300 ~ "100-300",
+                           Fatalities > 300 & Fatalities <= 500 ~ "100-500",
+                           Fatalities > 500 & Fatalities <= 1000 ~ "500-1000",
+                           Fatalities > 1000 ~ "More than 1000"),
+        colorCode = case_when(Fatalities < 100 ~ "pink3",
+                           Fatalities >= 100 & Fatalities <= 300 ~ "#FCAE91",
+                           Fatalities > 300 & Fatalities <= 500 ~ "#FB6A4A",
+                           Fatalities > 500 & Fatalities <= 1000 ~ "#DE2D26",
+                           Fatalities > 1000 ~ "#A50F15")
+    )
+library(leaflet)
+pop <- paste(df$City, df$Fatalities)
+```
+
+```{r map, include=TRUE}
+    leaflet() %>% 
+    addTiles() %>% 
+    addCircleMarkers(lat = df$Latitude, lng = df$Longitude, popup = pop,
+                     radius = sqrt(df$Fatalities),
+                     clusterOptions = markerClusterOptions(),
+                     color = df$colorCode,
+                     fill = df$colorCode) %>% 
+    addLegend(labels = df$colorLabel, colors = df$colorCode)
+    
+```
+
